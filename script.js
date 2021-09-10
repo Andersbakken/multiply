@@ -5,7 +5,7 @@ let bodyDiv;
 let gridContainerDiv;
 let infoDiv;
 let questionDiv;
-let resultsDiv;
+let questionsDiv;
 let startDiv;
 
 let answer = "";
@@ -20,7 +20,7 @@ let results;
 let startTime;
 let wrong = 0;
 let pending = true;
-let buttonAnimations = new Map();
+let buttonAnimation;
 let questions = [];
 
 const time = 5;
@@ -43,16 +43,18 @@ function flash(clazz)
 
 function pressButton(value)
 {
-    const button = document.getElementById(`button${value}`);
-    let cur = buttonAnimations.get(value);
-    if (cur) {
-        clearTimeout(cur);
+    if (buttonAnimation) {
+        clearTimeout(buttonAnimation.id);
+        buttonAnimation.func();
     }
+    const button = document.getElementById(`button${value}`);
     button.classList.add("pressed");
-    buttonAnimations.set(value, setTimeout(() => {
-        buttonAnimations.delete(value);
+
+    const func = () => {
+        buttonAnimation = undefined;
         button.classList.remove("pressed");
-    }, 500));
+    };
+    buttonAnimation = { id: setTimeout(func, 500), func };
 }
 
 function question()
@@ -114,11 +116,17 @@ function onBackspace()
 function clearHistory()
 {
     localStorage.clear();
-    updateInfo();
+    location.reload();
 }
 
 function onKey(event)
 {
+    if (event.key === "x") {
+        clearHistory();
+        return;
+    }
+
+    // console.log(event);
     if (pending) {
         start();
         return;
@@ -139,9 +147,6 @@ function onKey(event)
     case "Backspace":
         onBackspace();
         break;
-    case "x":
-        clearHistory();
-        break;
     }
 }
 
@@ -159,8 +164,8 @@ function updateResults()
             lastTen += value;
         }
     }
-    averageAll = results.length ? Math.round(total / results.length) : undefined;
-    averageLastTen = results.length ? Math.round(lastTen / Math.min(10, results.length)) : undefined;
+    averageAll = results.length ? (total / results.length).toFixed(1) : undefined;
+    averageLastTen = results.length ? (lastTen / Math.min(10, results.length)).toFixed(1) : undefined;
 }
 
 function updateInfo()
@@ -180,12 +185,17 @@ function updateInfo()
         startDiv.classList.remove("hidden");
         gridContainerDiv.classList.add("hidden");
         gridContainerDiv.classList.remove("grid-container");
-        resultsDiv.innerHTML = results.map((result, idx) => {
-            const res = result.correct === undefined ? "" : (result.correct ? "correct" : "wrong");
-            return `${idx + 1}/${results.length}: ${result.question} => ${res}`;
+        questions.length -= 1;
+        questionsDiv.innerHTML = questions.map((item, idx) => {
+            let ret = `${idx + 1}/${questions.length}: ${item.question} => <span style="color:${item.correct ? "green": "red"}">${item.correct ? "correct" : "wrong"}</span>`;
+            if (idx + 1 === questions.length) {
+                ret = `<u>${ret}</u><br/><b>Total: ${correct}/${questions.length} ${Math.round((correct / questions.length) * 100)}%</b>`;
+            }
+            return ret;
+            return ret;
         }).join("<br\>");
-        resultsDiv.classList.remove("hidden");
-        resultsDiv.classList.add("results");
+        questionsDiv.classList.remove("hidden");
+        questionsDiv.classList.add("questions");
     }
 
     let str = "";
@@ -211,6 +221,7 @@ function start()
     startDiv.classList.add("hidden"); // can it have more than one hidden?
     gridContainerDiv.classList.remove("hidden");
     gridContainerDiv.classList.add("grid-container");
+    questionsDiv.classList.add("hidden");
     correct = wrong = 0;
     updateInfo();
     question();
@@ -224,7 +235,7 @@ function onLoad()
     answerDiv = document.getElementById("answer");
     bodyDiv = document.getElementById("body");
     gridContainerDiv = document.getElementById("grid-container");
-    resultsDiv = document.getElementById("results");
+    questionsDiv = document.getElementById("questions");
     infoDiv = document.getElementById("info");
     questionDiv = document.getElementById("question");
     startDiv = document.getElementById("start");
@@ -238,6 +249,7 @@ function onLoad()
 
     const str = localStorage.getItem("results");
     results = str ? JSON.parse(str) : [];
+    console.log(results);
     updateResults();
     updateInfo();
     // start();
