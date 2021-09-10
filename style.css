@@ -1,0 +1,60 @@
+body {
+    background-color: blue;
+    color: white;
+    font-size: 125px;
+    text-align:center;
+    margin: 20px
+}
+
+.wrong {
+    background-color: red;
+}
+
+.correct {
+    background-color: green;
+}
+
+.info {
+    font-size: 50px;
+}
+
+.results {
+    font-size: 30px;
+}
+
+.hidden {
+    display: none;
+}
+
+.grid-container {
+    display: grid;
+    grid-gap: 50px;
+    grid-template-columns: auto auto auto;
+    background-color: green;
+    padding: 10px;
+}
+
+.grid-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: black;
+    border: 10px solid rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    font-size: 60px;
+    text-align: center;
+}
+
+.zero {
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
+.pressed {
+    border: 10px solid blue;
+    background-color: gray;
+}
+
+.backspace {
+    grid-column-start: 3;
+    grid-column-end: 3;
+}
+
